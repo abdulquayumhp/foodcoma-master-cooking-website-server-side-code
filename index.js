@@ -68,6 +68,28 @@ app.get("/servicesCardLimit", async (req, res) => {
 	}
 });
 
+app.get("/serviceCard", async (req, res) => {
+	try {
+		const cursor = await CookServiceCollection.find({});
+		const result = await cursor.toArray();
+		// console.log(result);
+		// console.log("hello");
+
+		res.send({
+			success: true,
+			message: `Successfully got the data`,
+			data: result,
+		});
+	} catch (error) {
+		console.log(error.name.bgRed, error.message.bold);
+
+		res.send({
+			success: false,
+			message: error.message,
+		});
+	}
+});
+
 app.get("/", (req, res) => {
 	res.send("server running");
 });
