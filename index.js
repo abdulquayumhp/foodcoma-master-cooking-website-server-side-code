@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 require("colors");
-const { MongoClient } = require("mongodb");
+const { MongoClient, ObjectId } = require("mongodb");
 require("dotenv").config();
 
 const app = express();
@@ -25,6 +25,9 @@ async function dbConnect() {
 dbConnect();
 
 const CookServiceCollection = client.db("cookService").collection("CookCard");
+const CookReviewCollection = client
+	.db("cookReviewCollection")
+	.collection("CookReview");
 
 app.post("/service", async (req, res) => {
 	try {
@@ -86,6 +89,80 @@ app.get("/serviceCard", async (req, res) => {
 		res.send({
 			success: false,
 			message: error.message,
+		});
+	}
+});
+
+app.get("/details/:id", async (req, res) => {
+	const { id } = req.params;
+	// console.log(id);
+	try {
+		const idAdd = { _id: ObjectId(id) };
+		// console.log(idAdd);
+		const user = await CookServiceCollection.findOne(idAdd);
+		if (!user?._id) {
+			res.send({
+				success: true,
+				message: `User Id does't exist`,
+			});
+		} else {
+			res.send(user);
+		}
+	} catch (error) {
+		res.send({
+			success: false,
+			error: error.message,
+		});
+	}
+});
+
+// server to client card data load end
+// server to client card data load end
+// server to client card data load end
+
+// review data to server start
+// review data to server start
+// review data to server start
+
+app.post("/review", async (req, res) => {
+	try {
+		const result = await CookReviewCollection.insertOne(req.body);
+		if (result.insertedId) {
+			res.send({
+				success: true,
+				message: `Successfully create review`,
+			});
+		} else {
+			res.send({
+				success: false,
+				message: "Couldn't create the review",
+			});
+		}
+	} catch (error) {
+		console.log(error.name);
+		res.send({
+			success: false,
+			error: error.message,
+		});
+	}
+});
+
+app.get("/allReview", async (req, res) => {
+	try {
+		const user = await CookReviewCollection.find({});
+		const result = await user.toArray();
+		// console.log(result);
+
+		res.send({
+			success: true,
+			message: `successfully got the data`,
+			data: result,
+		});
+	} catch (error) {
+		console.log(error.name);
+		res.send({
+			success: false,
+			error: error.message,
 		});
 	}
 });
