@@ -31,7 +31,7 @@ const CookReviewCollection = client
 
 app.post("/service", async (req, res) => {
 	try {
-		// console.log(req.body);
+		console.log(req.body);
 		const result = await CookServiceCollection.insertOne(req.body);
 		if (result.insertedId) {
 			res.send({
@@ -165,6 +165,28 @@ app.get("/allReview", async (req, res) => {
 			error: error.message,
 		});
 	}
+});
+
+app.post("/myReview", async (req, res) => {
+	try {
+		const user = req.body.email;
+		// console.log(user);
+		// res.send(user);
+		const result = await CookReviewCollection.find({});
+		const review = await result.toArray();
+		console.log(review);
+	} catch (error) {
+		console.log(error.name);
+		res.send({
+			success: false,
+			error: error.message,
+		});
+	}
+});
+
+app.get("/myReview", async (req, res) => {
+	console.log(req.body);
+	// res.send(req.body);
 });
 
 app.get("/", (req, res) => {
