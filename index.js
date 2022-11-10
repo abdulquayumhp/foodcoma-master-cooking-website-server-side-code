@@ -264,7 +264,7 @@ app.put("/users/:id", async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-	res.send("server running");
+	res.send("server running sorry");
 });
 
 app.listen(port, () => {
