@@ -167,26 +167,59 @@ app.get("/allReview", async (req, res) => {
 	}
 });
 
-app.post("/myReview", async (req, res) => {
-	try {
-		const user = req.body.email;
-		// console.log(user);
-		// res.send(user);
-		const result = await CookReviewCollection.find({});
-		const review = await result.toArray();
-		console.log(review);
-	} catch (error) {
-		console.log(error.name);
-		res.send({
-			success: false,
-			error: error.message,
-		});
+app.get("/myReviews", async (req, res) => {
+	console.log(req.query);
+	let query = {};
+	// console.log(query);
+	if (req.query.email) {
+		box = { email: req.query.email };
 	}
+	const cursor = await CookReviewCollection.find(box);
+	// console.log(cursor);
+	const reviews = await cursor.toArray();
+	// console.log(reviews);
+	res.send(reviews);
 });
 
-app.get("/myReview", async (req, res) => {
-	console.log(req.body);
-	// res.send(req.body);
+app.delete("/delateReview/:id", async (req, res) => {
+	const { id } = req.params;
+	// console.log(id);
+	const query = { _id: ObjectId(id) };
+	// console.log(query);
+	const result = await CookReviewCollection.deleteOne(query);
+	res.send(result);
+});
+
+app.get("/users/:id", async (req, res) => {
+	const { id } = req.params;
+	// console.log(id);
+	const query = { _id: ObjectId(id) };
+	// console.log(query);
+	const user = await CookReviewCollection.findOne(query);
+	// console.log(user);
+	res.send(user);
+});
+
+app.put("/users/:id", async (req, res) => {
+	const { id } = req.params;
+	const filter = { _id: ObjectId(id) };
+	const user = req.body;
+	const option = { upsert: true };
+	const updatedUser = {
+		$set: {
+			rating: user.rating,
+			shortText: user.shortText,
+			detailsReview: user.detailsReview,
+		},
+	};
+	const result = await CookReviewCollection.updateOne(
+		filter,
+		updatedUser,
+		option
+	);
+	res.send(result);
+	console.log(user);
+	console.log(result);
 });
 
 app.get("/", (req, res) => {
