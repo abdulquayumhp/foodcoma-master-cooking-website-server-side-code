@@ -4,6 +4,8 @@ require("colors");
 const { MongoClient, ObjectId } = require("mongodb");
 require("dotenv").config();
 
+const jwt = require("jsonwebtoken");
+
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -28,6 +30,26 @@ const CookServiceCollection = client.db("cookService").collection("CookCard");
 const CookReviewCollection = client
 	.db("cookReviewCollection")
 	.collection("CookReview");
+
+// function verifyUser(req, res, next) {
+// 	const authHeader = req.headers.authorization;
+// 	// console.log(authHeader);
+// 	if (!authHeader) {
+// 		return res.status(401).send({ message: "bag" });
+// 	}
+// 	const token = authHeader.split(" ")[1];
+// 	jwt.verify(token, process.env.ACCESS_TOKEN, function (err, decoded) {
+// 		const boc = (req.decoded = decoded);
+// 		// console.log(boc);
+// 		next();
+// 	});
+// }
+
+// app.post("/jwt", async (req, res) => {
+// 	const user = req.body;
+// 	const token = jwt.sign(user, process.env.ACCESS_TOKEN, { expiresIn: "1h" });
+// 	res.send({ token });
+// });
 
 app.post("/service", async (req, res) => {
 	try {
@@ -56,7 +78,7 @@ app.post("/service", async (req, res) => {
 app.get("/servicesCardLimit", async (req, res) => {
 	try {
 		const cursor = await CookServiceCollection.find({});
-		const serviceCard = await cursor.limit(3).toArray();
+		const serviceCard = await cursor.sort({ _id: -1 }).limit(3).toArray();
 		res.send({
 			success: true,
 			message: `Successfully got the data`,
@@ -150,7 +172,7 @@ app.post("/review", async (req, res) => {
 app.get("/allReview", async (req, res) => {
 	try {
 		const user = await CookReviewCollection.find({});
-		const result = await user.toArray();
+		const result = await user.sort({ _id: -1 }).toArray();
 		// console.log(result);
 
 		res.send({
@@ -168,18 +190,37 @@ app.get("/allReview", async (req, res) => {
 });
 
 app.get("/myReviews", async (req, res) => {
-	console.log(req.query);
 	let query = {};
 	// console.log(query);
 	if (req.query.email) {
-		box = { email: req.query.email };
+		query = {
+			email: req.query.email,
+		};
 	}
-	const cursor = await CookReviewCollection.find(box);
+	const cursor = CookReviewCollection.find(query);
 	// console.log(cursor);
-	const reviews = await cursor.toArray();
-	// console.log(reviews);
-	res.send(reviews);
+	const result = await cursor.toArray();
+	// console.log(result);
+	res.send(result);
 });
+
+// app.get("/myReview", verifyEmail, async (req, res) => {
+// 	console.log(req.query);
+// 	const decoded = req.decoded;
+// 	if (decoded.email !== req.query.email) {
+// 		res.status(403).send({ message: "unauthorized access" });
+// 	}
+// 	let query = {};
+// 	if (req.query.email) {
+// 		query = {
+// 			email: req.query.email,
+// 		};
+// 	}
+// 	const cursor = CookReviewCollection.find(query);
+// 	const result = await cursor.sort({ _id: -1 }).toArray();
+// 	console.log(result);
+// 	res.send(result);
+// });
 
 app.delete("/delateReview/:id", async (req, res) => {
 	const { id } = req.params;
@@ -218,8 +259,8 @@ app.put("/users/:id", async (req, res) => {
 		option
 	);
 	res.send(result);
-	console.log(user);
-	console.log(result);
+	// console.log(user);
+	// console.log(result);
 });
 
 app.get("/", (req, res) => {
